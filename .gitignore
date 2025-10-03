@@ -1,38 +1,35 @@
-# ===== ANGULAR & NODE.JS =====
+# ===== ANGULAR FRONTEND =====
 # Dependencies
 angular-frontend/node_modules/
-node_modules/
-package-lock.json
-yarn.lock
+angular-frontend/package-lock.json
+angular-frontend/yarn.lock
 
-# Angular specific cache and build files
+# Angular build and cache
 angular-frontend/.angular/
 angular-frontend/dist/
-angular-frontend/.nx/cache/
 angular-frontend/coverage/
-angular-frontend/e2e/
-angular-frontend/.nyc_output/
-angular-frontend/tmp/
 angular-frontend/out-tsc/
+angular-frontend/tmp/
 
-# Angular CLI cache
-.angular/
-dist/
-.nx/cache/
+# Angular CLI generated files
+angular-frontend/.nx/cache/
+angular-frontend/.nyc_output/
+angular-frontend/e2e/
 
-# Node.js logs and runtime
+# Node.js logs
+angular-frontend/npm-debug.log*
+angular-frontend/yarn-debug.log*
+angular-frontend/yarn-error.log*
+
+# General Node.js (if any other Node.js projects)
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 .npm
 .eslintcache
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+package-lock.json
+yarn.lock
 
 # ===== PYTHON =====
 # Byte-compiled / optimized / DLL files

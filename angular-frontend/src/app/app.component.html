@@ -1,275 +1,46 @@
-<div class="app-container">
-  <!-- Theme Toggle -->
-  <div class="theme-toggle">
-    <mat-slide-toggle 
-      [checked]="themeService.isDarkMode()" 
-      (change)="themeService.toggleTheme()"
-      color="primary">
-      Dark mode
-    </mat-slide-toggle>
-  </div>
+<div class="container">
+  <h1>🌐 WebIntel Analytics</h1>
+  <p>AI-powered web intelligence platform for content analysis and question generation</p>
 
-  <!-- Hero Section -->
-  <div class="hero">
-    <h1>🌐 WebIntel Analytics</h1>
-    <p>Advanced AI-powered web intelligence platform for comprehensive content analysis and strategic question generation</p>
-  </div>
-
-  <!-- Backend Health Check -->
-  <div *ngIf="!isBackendHealthy" class="error-panel">
-    <mat-icon>warning</mat-icon>
-    <div>
-      <strong>Backend server is not running.</strong>
-      <p>Please start the backend server first.</p>
-      <p><code>python backend/api_server.py</code> or <code>uvicorn backend.api_server:app --reload</code></p>
-    </div>
-  </div>
-
-  <!-- Main Configuration Form -->
-  <div class="main-content" *ngIf="isBackendHealthy">
-    <div class="config-container">
-      <div class="card">
-        <h2>Intelligence Configuration</h2>
-        <p class="muted">Configure your web intelligence parameters and data extraction preferences</p>
-
-        <form [formGroup]="configForm" (ngSubmit)="onSubmit()">
-          <!-- URL Input -->
-          <div class="form-group">
-            <label class="form-label">Website URL</label>
-            <input 
-              type="url" 
-              class="form-input" 
-              formControlName="url" 
-              placeholder="https://example.com/help">
-          </div>
-
-          <!-- Query Input -->
-          <div class="form-group">
-            <label class="form-label">Question Types</label>
-            <textarea 
-              class="form-input form-textarea" 
-              formControlName="query"
-              placeholder="The retrieval/generation focus for extracting golden questions">
-            </textarea>
-          </div>
-
-          <!-- Analysis Options Row -->
-          <div class="form-row">
-            <div class="form-col">
-              <mat-slide-toggle formControlName="analysisQuestions" color="primary">
-                Analysis Questions
-              </mat-slide-toggle>
-              <mat-slide-toggle formControlName="criticalThinking" color="primary">
-                Critical Thinking
-              </mat-slide-toggle>
-            </div>
-            <div class="form-col">
-              <div class="form-group">
-                <label class="form-label">Output Format</label>
-                <select class="form-input" formControlName="outputFormat">
-                  <option value="Excel (.xlsx)">Excel (.xlsx)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Output filename</label>
-                <input 
-                  type="text" 
-                  class="form-input" 
-                  formControlName="outputFilename">
-              </div>
-            </div>
-          </div>
-
-          <!-- Advanced Options -->
-          <mat-expansion-panel class="advanced-options">
-            <mat-expansion-panel-header>
-              <mat-panel-title>Advanced Options</mat-panel-title>
-            </mat-expansion-panel-header>
-
-            <!-- Scraping Section -->
-            <div class="options-section">
-              <h4 class="muted">Scraping</h4>
-              <div class="form-row">
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label">Scroll pages</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="scrollPages" 
-                      min="1" max="20">
-                  </div>
-                </div>
-                <div class="form-col">
-                  <mat-slide-toggle formControlName="crawl" color="primary">
-                    Crawl hyperlinks
-                  </mat-slide-toggle>
-                </div>
-                <div class="form-col">
-                  <mat-slide-toggle formControlName="allowExternal" color="primary">
-                    Allow external domains
-                  </mat-slide-toggle>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label">Max depth</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="maxDepth" 
-                      min="1" max="5">
-                  </div>
-                </div>
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label">Max pages</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="maxPages" 
-                      min="1" max="200">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Retrieval & Validation Section -->
-            <div class="options-section">
-              <h4 class="muted">Retrieval & Validation</h4>
-              <div class="form-row">
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label">Top-k chunks</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="k" 
-                      min="5" max="200">
-                  </div>
-                </div>
-                <div class="form-col">
-                  <mat-slide-toggle formControlName="validate" color="primary">
-                    Content quality validation
-                  </mat-slide-toggle>
-                </div>
-                <div class="form-col">
-                  <mat-slide-toggle formControlName="debug" color="primary">
-                    Debug mode
-                  </mat-slide-toggle>
-                </div>
-              </div>
-            </div>
-
-            <!-- Test Cases Section -->
-            <div class="options-section">
-              <h4 class="muted">Test Cases</h4>
-              <div class="form-row">
-                <div class="form-col">
-                  <mat-slide-toggle formControlName="withTestCases" color="primary">
-                    Generate TestCases
-                  </mat-slide-toggle>
-                </div>
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label"># Variations per question</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="tcVariations" 
-                      min="1" max="100">
-                  </div>
-                </div>
-                <div class="form-col">
-                  <div class="form-group">
-                    <label class="form-label"># Negative cases per question</label>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="tcNegatives" 
-                      min="1" max="100">
-                  </div>
-                </div>
-              </div>
-              <mat-slide-toggle formControlName="tcLlm" color="primary">
-                Use LLM for test cases
-              </mat-slide-toggle>
-            </div>
-          </mat-expansion-panel>
-
-          <!-- Submit Button -->
-          <div class="submit-container">
-            <button 
-              type="submit" 
-              class="primary-button"
-              [disabled]="!configForm.valid || isSubmitting">
-              <mat-icon *ngIf="isSubmitting">sync</mat-icon>
-              {{ isSubmitting ? 'Starting Analysis...' : 'Start Intelligence Analysis' }}
-            </button>
-          </div>
-        </form>
-      </div>
+  <div class="form-card" *ngIf="!currentJob">
+    <h2>Configuration</h2>
+    
+    <div class="form-group">
+      <label>Website URL</label>
+      <input type="url" [(ngModel)]="url" placeholder="https://example.com/help" required>
     </div>
 
-    <!-- Job Status Display -->
-    <div *ngIf="currentJob" class="status-container">
-      <div [ngClass]="{'success-panel': currentJob.status === 'completed', 'card': currentJob.status !== 'completed'}">
-        <div class="status-header">
-          <mat-icon [ngClass]="getStatusClass()">{{ getStatusIcon() }}</mat-icon>
-          <div class="status-content">
-            <h3 *ngIf="currentJob.status === 'pending'">Job queued, waiting to start...</h3>
-            <h3 *ngIf="currentJob.status === 'running'">Pipeline is running... This may take a few minutes.</h3>
-            <h3 *ngIf="currentJob.status === 'completed'">✅ Intelligence Report Ready</h3>
-            <h3 *ngIf="currentJob.status === 'failed'">❌ Pipeline failed</h3>
-            
-            <p *ngIf="currentJob.status === 'completed'">
-              Comprehensive strategic insights generated from web analysis.
-            </p>
-            <p *ngIf="currentJob.status === 'failed'">
-              {{ currentJob.error || 'Unknown error occurred' }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Progress Bar -->
-        <div *ngIf="currentJob.status === 'running'" class="progress-container">
-          <div class="progress-bar progress-indeterminate"></div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons" *ngIf="currentJob.status === 'completed' || currentJob.status === 'failed'">
-          <button 
-            *ngIf="currentJob.status === 'completed'"
-            class="primary-button"
-            (click)="downloadResult()">
-            📥 Download Excel File
-          </button>
-          <button 
-            class="primary-button"
-            (click)="startNewAnalysis()">
-            {{ currentJob.status === 'completed' ? 'Start New Analysis' : 'Try Again' }}
-          </button>
-        </div>
-      </div>
+    <div class="form-group">
+      <label>Question Types</label>
+      <textarea [(ngModel)]="query" rows="3"></textarea>
     </div>
 
-    <!-- Feature Tiles -->
-    <div class="features-section">
-      <div class="features-grid">
-        <div class="tile">
-          <h4>🧠 Intelligent Content Mining</h4>
-          <p>Advanced AI algorithms analyze web content to extract strategic insights and generate actionable intelligence</p>
-        </div>
-        <div class="tile">
-          <h4>⚙️ Enterprise Configuration</h4>
-          <p>Flexible configuration options for analysis depth, intelligence types, and export formats tailored to enterprise needs</p>
-        </div>
-        <div class="tile">
-          <h4>⬇️ Multi-Format Intelligence Reports</h4>
-          <p>Export intelligence reports in Excel for seamless integration with enterprise systems</p>
-        </div>
-      </div>
+    <div class="form-group">
+      <label>Output Filename</label>
+      <input type="text" [(ngModel)]="outputFilename">
+    </div>
+
+    <button (click)="onSubmit()" [disabled]="!url || isSubmitting" class="btn-primary">
+      {{ isSubmitting ? 'Starting...' : 'Start Analysis' }}
+    </button>
+  </div>
+
+  <div class="status-card" *ngIf="currentJob">
+    <h3 *ngIf="currentJob.status === 'pending'">⏳ Job queued...</h3>
+    <h3 *ngIf="currentJob.status === 'running'">🔄 Pipeline running...</h3>
+    <h3 *ngIf="currentJob.status === 'completed'">✅ Analysis Complete!</h3>
+    <h3 *ngIf="currentJob.status === 'failed'">❌ Analysis Failed</h3>
+    
+    <p>{{ currentJob.message }}</p>
+    <p *ngIf="currentJob.error">Error: {{ currentJob.error }}</p>
+
+    <div class="actions" *ngIf="currentJob.status === 'completed' || currentJob.status === 'failed'">
+      <button *ngIf="currentJob.status === 'completed'" (click)="downloadResult()" class="btn-primary">
+        📥 Download Excel
+      </button>
+      <button (click)="startNew()" class="btn-secondary">
+        {{ currentJob.status === 'completed' ? 'New Analysis' : 'Try Again' }}
+      </button>
     </div>
   </div>
 </div>
