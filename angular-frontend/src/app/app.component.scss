@@ -1,0 +1,253 @@
+.app-container {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  padding: 20px;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.config-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.config-container .card {
+  width: 100%;
+  max-width: 800px;
+}
+
+.config-container h2 {
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.submit-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.submit-container .primary-button {
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.status-container {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.status-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.status-content h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-color);
+}
+
+.status-content p {
+  margin: 0;
+  color: var(--muted-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .primary-button {
+  flex: 1;
+  min-width: 200px;
+}
+
+.features-section {
+  margin-top: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.error-panel {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 800px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  color: #dc2626;
+}
+
+[data-theme="dark"] .error-panel {
+  background-color: #2d1b1b;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.error-panel mat-icon {
+  color: #dc2626;
+  margin-top: 2px;
+}
+
+[data-theme="dark"] .error-panel mat-icon {
+  color: #fca5a5;
+}
+
+.error-panel strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.error-panel p {
+  margin: 0.25rem 0;
+}
+
+.error-panel code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.advanced-options {
+  margin: 1rem 0;
+  background-color: var(--card-bg) !important;
+}
+
+.options-section {
+  margin-bottom: 1.5rem;
+}
+
+.options-section h4 {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Material Design component overrides
+::ng-deep {
+  .mat-mdc-slide-toggle {
+    margin-bottom: 0.5rem;
+    
+    .mdc-switch {
+      .mdc-switch__track {
+        background-color: var(--border-color) !important;
+      }
+      
+      &.mdc-switch--checked .mdc-switch__track {
+        background-color: var(--primary-color) !important;
+      }
+    }
+    
+    .mdc-form-field > label {
+      color: var(--text-color) !important;
+    }
+  }
+
+  .mat-expansion-panel {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    
+    .mat-expansion-panel-header {
+      color: var(--text-color) !important;
+    }
+    
+    .mat-expansion-panel-body {
+      padding: 1rem !important;
+    }
+  }
+
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--card-bg) !important;
+    }
+    
+    .mat-mdc-form-field-input-control {
+      color: var(--text-color) !important;
+    }
+    
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--border-color) !important;
+    }
+    
+    &.mat-focused {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: var(--primary-color) !important;
+      }
+    }
+  }
+
+  .mat-mdc-select {
+    .mat-mdc-select-value {
+      color: var(--text-color) !important;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons .primary-button {
+    min-width: unset;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .theme-toggle {
+    position: relative;
+    top: unset;
+    right: unset;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
