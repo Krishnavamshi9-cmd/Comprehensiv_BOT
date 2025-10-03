@@ -1,19 +1,49 @@
-# Angular
+# ===== ANGULAR & NODE.JS =====
+# Dependencies
 angular-frontend/node_modules/
+node_modules/
+package-lock.json
+yarn.lock
+
+# Angular specific cache and build files
 angular-frontend/.angular/
 angular-frontend/dist/
 angular-frontend/.nx/cache/
+angular-frontend/coverage/
+angular-frontend/e2e/
+angular-frontend/.nyc_output/
+angular-frontend/tmp/
+angular-frontend/out-tsc/
 
-# Node.js
-node_modules/
+# Angular CLI cache
+.angular/
+dist/
+.nx/cache/
+
+# Node.js logs and runtime
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
 
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ===== PYTHON =====
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+backend/__pycache__/
+frontend/__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
 
 # C extensions
 *.so
@@ -131,7 +161,8 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# ===== ENVIRONMENTS & CONFIG =====
+# Python environments
 .env
 .venv
 env/
@@ -139,6 +170,26 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# ===== PROJECT SPECIFIC OUTPUT =====
+# Backend output and results
+backend/output/
+output/
+results/
+downloads/
+temp/
+tmp/
+cache/
+
+# Generated files
+*.xlsx
+*.csv
+*.json.bak
+*.log.old
+
+# Playwright browsers and cache
+playwright/
+.playwright/
 
 # Spyder project settings
 .spyderproject
@@ -164,20 +215,15 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be added to the global gitignore or merged into this project gitignore.
-#  For PyCharm Community Edition, use 'PyCharm CE' instead of 'PyCharm'.
-.idea/
-
+# ===== IDE & EDITOR =====
 # VS Code
 .vscode/
+*.code-workspace
 
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
+# PyCharm / IntelliJ
+.idea/
 
+# ===== OS SPECIFIC =====
 # Windows
 Thumbs.db
 Thumbs.db:encryptable
@@ -194,35 +240,44 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
 # Linux
 *~
 
-# Temporary files
+# ===== TEMPORARY & BACKUP FILES =====
 *.swp
 *.swo
 *~
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.tmp
+*.temp
 
-# Logs
+# System and editor temp files
+.DS_Store?
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~$*
+
+# ===== LOGS & DATABASES =====
 *.log
 logs/
-
-# Database files
 *.db
 *.sqlite
 *.sqlite3
 
-# Configuration files with sensitive data
+# ===== SENSITIVE CONFIG =====
 config.ini
 settings.ini
 secrets.json
-
-# Node modules (if you have any frontend dependencies)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Backup files
-*.bak
-*.backup
-*.old
+.env.local
+.env.production
