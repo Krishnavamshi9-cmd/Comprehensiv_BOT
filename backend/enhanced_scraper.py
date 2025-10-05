@@ -4,6 +4,8 @@ Addresses root cause issues in content extraction.
 """
 
 import re
+import random
+import time
 from typing import Optional, List, Dict, Tuple
 from urllib.parse import urlparse, urljoin
 from collections import Counter
@@ -12,6 +14,18 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 from selectolax.parser import HTMLParser
 import requests
 from bs4 import BeautifulSoup
+
+# Import stealth scraper for advanced bot detection bypass
+try:
+    from .stealth_scraper import StealthScraper
+    STEALTH_AVAILABLE = True
+except ImportError:
+    try:
+        from stealth_scraper import StealthScraper
+        STEALTH_AVAILABLE = True
+    except ImportError:
+        STEALTH_AVAILABLE = False
+        print("⚠ Stealth scraper not available. Install undetected-chromedriver and selenium for advanced bot bypass.")
 
 
 class ScraperError(Exception):
@@ -229,20 +243,59 @@ def _clean_extracted_text(text: str) -> str:
     return '\n'.join(cleaned_lines)
 
 
+def _get_random_user_agent() -> str:
+    """Return a random realistic user agent."""
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ]
+    return random.choice(user_agents)
+
+
+def _get_realistic_headers() -> Dict[str, str]:
+    """Generate realistic HTTP headers to avoid detection."""
+    return {
+        'User-Agent': _get_random_user_agent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+        'DNT': '1'
+    }
+
+
 def _fallback_requests_scraper(url: str) -> str:
-    """Fallback scraper using requests + BeautifulSoup."""
+    """Enhanced fallback scraper using requests + BeautifulSoup with anti-detection."""
     print("🔄 Trying fallback requests-based scraper...")
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'keep-alive',
-    }
+    headers = _get_realistic_headers()
+    
+    # Force HTTP/1.1 to avoid HTTP/2 issues
+    session = requests.Session()
+    session.mount('https://', requests.adapters.HTTPAdapter())
+    session.mount('http://', requests.adapters.HTTPAdapter())
     
     try:
-        response = requests.get(url, headers=headers, timeout=30)
+        # Add random delay to mimic human behavior
+        time.sleep(random.uniform(1, 3))
+        
+        response = session.get(
+            url, 
+            headers=headers, 
+            timeout=30,
+            allow_redirects=True,
+            verify=True
+        )
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -307,21 +360,39 @@ def enhanced_scrape_url(url: str,
             print(f"❌ Playwright {strategy} failed: {e}")
             continue
 
-    # If Playwright failed to produce acceptable content, fallback to requests
+    # If Playwright failed to produce acceptable content, try stealth scraper
+    if 'main_content' not in locals() and STEALTH_AVAILABLE:
+        try:
+            print("🎭 Trying advanced stealth scraper...")
+            stealth_scraper = StealthScraper()
+            content = stealth_scraper.scrape_url(url)
+            if validate_quality:
+                is_valid, message = _validate_content_quality(content, min_content_length)
+                if is_valid:
+                    print(f"✅ Stealth scraper succeeded: {len(content)} chars")
+                    main_content = content
+                else:
+                    print(f"⚠ Stealth scraper quality check failed: {message}")
+            else:
+                main_content = content
+        except Exception as e:
+            print(f"❌ Stealth scraper failed: {e}")
+
+    # Final fallback to basic requests scraper
     if 'main_content' not in locals():
         try:
             content = _fallback_requests_scraper(url)
             if validate_quality:
                 is_valid, message = _validate_content_quality(content, min_content_length)
                 if is_valid:
-                    print(f"✅ Fallback scraper succeeded: {len(content)} chars")
+                    print(f"✅ Basic fallback scraper succeeded: {len(content)} chars")
                     main_content = content
                 else:
-                    print(f"⚠ Fallback quality check failed: {message}")
+                    print(f"⚠ Basic fallback quality check failed: {message}")
             else:
                 main_content = content
         except Exception as e:
-            print(f"❌ Fallback scraper failed: {e}")
+            print(f"❌ Basic fallback scraper failed: {e}")
 
     if 'main_content' not in locals():
         raise ScraperError("All scraping strategies failed to extract quality content")
@@ -385,11 +456,12 @@ def enhanced_scrape_url(url: str,
 
 
 def _playwright_scraper(url: str, wait_strategy: str, timeout_ms: int, scroll_pages: int) -> Tuple[str, List[str]]:
-    """Playwright-based scraper with aggressive content loading.
+    """Enhanced Playwright-based scraper with stealth mode and anti-detection.
     Returns a tuple: (extracted_text, links)
     """
     
     with sync_playwright() as p:
+        # Enhanced browser launch with stealth arguments
         browser = p.chromium.launch(
             headless=True,
             args=[
@@ -400,26 +472,116 @@ def _playwright_scraper(url: str, wait_strategy: str, timeout_ms: int, scroll_pa
                 "--disable-features=VizDisplayCompositor",
                 "--disable-background-timer-throttling",
                 "--disable-backgrounding-occluded-windows",
-                "--disable-renderer-backgrounding"
+                "--disable-renderer-backgrounding",
+                "--disable-extensions",
+                "--disable-plugins",
+                "--disable-default-apps",
+                "--disable-sync",
+                "--disable-translate",
+                "--hide-scrollbars",
+                "--mute-audio",
+                "--no-first-run",
+                "--no-default-browser-check",
+                "--disable-gpu",
+                "--disable-software-rasterizer",
+                "--disable-background-networking",
+                "--disable-background-timer-throttling",
+                "--disable-client-side-phishing-detection",
+                "--disable-component-extensions-with-background-pages",
+                "--disable-default-apps",
+                "--disable-extensions",
+                "--disable-features=TranslateUI",
+                "--disable-hang-monitor",
+                "--disable-ipc-flooding-protection",
+                "--disable-popup-blocking",
+                "--disable-prompt-on-repost",
+                "--disable-renderer-backgrounding",
+                "--disable-sync",
+                "--force-color-profile=srgb",
+                "--metrics-recording-only",
+                "--no-first-run",
+                "--enable-automation",
+                "--password-store=basic",
+                "--use-mock-keychain",
+                "--force-http1",  # Force HTTP/1.1 to avoid HTTP/2 issues
+                "--disable-http2"  # Disable HTTP/2 completely
             ]
         )
         
+        # Create context with realistic browser fingerprint
         context = browser.new_context(
-            viewport={"width": 1920, "height": 1080},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": random.randint(1366, 1920), "height": random.randint(768, 1080)},
+            user_agent=_get_random_user_agent(),
             ignore_https_errors=True,
-            java_script_enabled=True
+            java_script_enabled=True,
+            extra_http_headers={
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1',
+                'Cache-Control': 'max-age=0'
+            }
         )
+        
+        # Add stealth scripts to avoid detection
+        context.add_init_script("""
+            // Remove webdriver property
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined,
+            });
+            
+            // Mock chrome runtime
+            window.chrome = {
+                runtime: {},
+            };
+            
+            // Mock permissions
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Notification.permission }) :
+                    originalQuery(parameters)
+            );
+            
+            // Mock plugins
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+            
+            // Mock languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en'],
+            });
+        """)
         
         page = context.new_page()
         page.set_default_timeout(timeout_ms)
         
         try:
-            # Navigate to page
-            page.goto(url, wait_until=wait_strategy, timeout=timeout_ms)
+            # Add random delay before navigation
+            time.sleep(random.uniform(1, 3))
             
-            # Wait for initial content
-            page.wait_for_timeout(3000)
+            # Navigate to page with retries
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    page.goto(url, wait_until=wait_strategy, timeout=timeout_ms)
+                    break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    print(f"⚠ Navigation attempt {attempt + 1} failed, retrying...")
+                    time.sleep(random.uniform(2, 5))
+            
+            # Wait for initial content with random delay
+            page.wait_for_timeout(random.randint(2000, 5000))
+            
+            # Simulate human-like behavior
+            _simulate_human_behavior(page)
             
             # Aggressive content loading
             _aggressive_content_loading(page, scroll_pages)
@@ -440,14 +602,41 @@ def _playwright_scraper(url: str, wait_strategy: str, timeout_ms: int, scroll_pa
             browser.close()
 
 
+def _simulate_human_behavior(page):
+    """Simulate human-like mouse movements and interactions."""
+    try:
+        # Random mouse movement
+        page.mouse.move(random.randint(100, 500), random.randint(100, 400))
+        time.sleep(random.uniform(0.5, 1.5))
+        
+        # Random scroll
+        page.evaluate(f"window.scrollTo(0, {random.randint(100, 300)})")
+        time.sleep(random.uniform(0.5, 1.0))
+        
+        # Focus on page
+        page.evaluate("document.body.focus()")
+    except Exception:
+        pass  # Ignore errors in simulation
+
+
 def _aggressive_content_loading(page, scroll_pages: int):
-    """Aggressively load all possible content."""
+    """Aggressively load all possible content with human-like delays."""
     
-    # 1. Scroll to load lazy content
+    # 1. Scroll to load lazy content with random delays
     for i in range(scroll_pages):
         print(f"📜 Scrolling {i+1}/{scroll_pages}")
-        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        page.wait_for_timeout(2000)
+        
+        # Random scroll amount and speed
+        scroll_amount = random.randint(300, 800)
+        page.evaluate(f"window.scrollBy(0, {scroll_amount})")
+        
+        # Human-like delay
+        delay = random.uniform(1500, 3500)
+        page.wait_for_timeout(int(delay))
+        
+        # Simulate mouse movement during scroll
+        page.mouse.move(random.randint(100, 800), random.randint(100, 600))
+        time.sleep(random.uniform(0.2, 0.8))
         
         # Try to click load more buttons
         load_more_selectors = [

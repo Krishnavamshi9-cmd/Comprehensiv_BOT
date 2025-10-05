@@ -1,6 +1,8 @@
 <div class="container">
-  <h1>🌐 WebIntel Analytics</h1>
-  <p>AI-powered web intelligence platform for content analysis and question generation</p>
+  <div class="header">
+    <h1>🌐 WebIntel Analytics</h1>
+    <button class="theme-toggle" (click)="toggleTheme()">{{ isDarkMode ? '☀️ Light' : '🌙 Dark' }}</button>
+  </div>
 
   <div class="form-card" *ngIf="!currentJob">
     <h2>Configuration</h2>
@@ -12,17 +14,238 @@
 
     <div class="form-group">
       <label>Question Types</label>
-      <textarea [(ngModel)]="query" rows="3"></textarea>
+      <textarea [(ngModel)]="query" rows="3" placeholder="Describe the questions to extract, e.g., Golden Q&A, FAQs, troubleshooting prompts..."></textarea>
     </div>
 
     <div class="form-group">
       <label>Output Filename</label>
-      <input type="text" [(ngModel)]="outputFilename">
+      <input type="text" [(ngModel)]="outputFilename" placeholder="golden_qna.xlsx">
     </div>
 
-    <button (click)="onSubmit()" [disabled]="!url || isSubmitting" class="btn-primary">
-      {{ isSubmitting ? 'Starting...' : 'Start Analysis' }}
-    </button>
+    <!-- Advanced Settings Toggle -->
+    <div class="advanced-toggle">
+      <button type="button" class="btn-toggle" (click)="toggleAdvancedSettings()">
+        <span class="toggle-icon">{{ showAdvancedSettings ? '🔽' : '▶️' }}</span>
+        Advanced Settings
+      </button>
+    </div>
+
+    <!-- Advanced Settings Panel -->
+    <div class="advanced-panel" *ngIf="showAdvancedSettings">
+      <div class="advanced-header">
+        <h3>🔧 Advanced Configuration</h3>
+        <button type="button" class="btn-reset" (click)="resetAdvancedSettings()">Reset to Defaults</button>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Scraping Strategy Section -->
+        <div class="settings-section">
+          <h4>🎯 Scraping Strategy</h4>
+          <div class="form-group">
+            <label>Strategy</label>
+            <select [(ngModel)]="advancedSettings.scrapingStrategy" (change)="onAdvancedSettingChange()">
+              <option value="auto">Auto (Recommended)</option>
+              <option value="playwright">Playwright Only</option>
+              <option value="stealth">Stealth Mode</option>
+              <option value="requests">Basic Requests</option>
+            </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.enableStealth" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Enable Stealth Mode
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.forceHttp1" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Force HTTP/1.1 (Bypass HTTP/2 errors)
+            </label>
+          </div>
+        </div>
+
+        <!-- Content Extraction Section -->
+        <div class="settings-section">
+          <h4>📄 Content Extraction</h4>
+          <div class="form-group">
+            <label>Min Content Length</label>
+            <input type="number" [(ngModel)]="advancedSettings.minContentLength" min="50" max="10000" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.validateQuality" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Validate Content Quality
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.enableCrawling" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Enable Link Crawling
+            </label>
+          </div>
+          <div class="form-group" *ngIf="advancedSettings.enableCrawling">
+            <label>Max Crawl Depth</label>
+            <input type="number" [(ngModel)]="advancedSettings.maxCrawlDepth" min="1" max="5" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group" *ngIf="advancedSettings.enableCrawling">
+            <label>Max Pages to Crawl</label>
+            <input type="number" [(ngModel)]="advancedSettings.maxCrawlPages" min="1" max="100" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group checkbox-group" *ngIf="advancedSettings.enableCrawling">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.sameDomainOnly" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Same Domain Only
+            </label>
+          </div>
+        </div>
+
+        <!-- Timeouts & Performance Section -->
+        <div class="settings-section">
+          <h4>⏱️ Timeouts & Performance</h4>
+          <div class="form-group">
+            <label>Timeout (ms)</label>
+            <input type="number" [(ngModel)]="advancedSettings.timeoutMs" min="10000" max="300000" step="5000" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Scroll Pages</label>
+            <input type="number" [(ngModel)]="advancedSettings.scrollPages" min="1" max="20" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Human Delay Min (ms)</label>
+            <input type="number" [(ngModel)]="advancedSettings.humanDelayMin" min="500" max="5000" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Human Delay Max (ms)</label>
+            <input type="number" [(ngModel)]="advancedSettings.humanDelayMax" min="1000" max="10000" (change)="onAdvancedSettingChange()">
+          </div>
+        </div>
+
+        <!-- Browser Settings Section -->
+        <div class="settings-section">
+          <h4>🌐 Browser Settings</h4>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.headless" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Headless Mode
+            </label>
+          </div>
+          <div class="form-group">
+            <label>User Agent</label>
+            <select [(ngModel)]="advancedSettings.userAgent" (change)="onAdvancedSettingChange()">
+              <option value="auto">Auto Rotation</option>
+              <option value="chrome">Chrome</option>
+              <option value="firefox">Firefox</option>
+              <option value="safari">Safari</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Viewport Width</label>
+            <input type="number" [(ngModel)]="advancedSettings.viewport.width" min="800" max="2560" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Viewport Height</label>
+            <input type="number" [(ngModel)]="advancedSettings.viewport.height" min="600" max="1440" (change)="onAdvancedSettingChange()">
+          </div>
+        </div>
+
+        <!-- Content Filtering Section -->
+        <div class="settings-section">
+          <h4>🚫 Content Filtering</h4>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.excludeNavigation" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Exclude Navigation
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.excludeAds" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Exclude Advertisements
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.excludeSocial" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Exclude Social Media
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.excludeComments" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Exclude Comments
+            </label>
+          </div>
+        </div>
+
+        <!-- Output Settings Section -->
+        <div class="settings-section">
+          <h4>📊 Output Settings</h4>
+          <div class="form-group">
+            <label>Max Questions</label>
+            <input type="number" [(ngModel)]="advancedSettings.maxQuestions" min="1" max="1000" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Question Format</label>
+            <select [(ngModel)]="advancedSettings.questionFormat" (change)="onAdvancedSettingChange()">
+              <option value="qa">Q&A Format</option>
+              <option value="faq">FAQ Format</option>
+              <option value="structured">Structured Data</option>
+            </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.includeMetadata" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Include Metadata
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.includeTimestamps" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Include Timestamps
+            </label>
+          </div>
+        </div>
+
+
+        <!-- Retry Settings Section -->
+        <div class="settings-section">
+          <h4>🔄 Retry Settings</h4>
+          <div class="form-group">
+            <label>Max Retries</label>
+            <input type="number" [(ngModel)]="advancedSettings.maxRetries" min="1" max="10" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group">
+            <label>Retry Delay (ms)</label>
+            <input type="number" [(ngModel)]="advancedSettings.retryDelay" min="1000" max="10000" step="500" (change)="onAdvancedSettingChange()">
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="advancedSettings.enableFallbacks" (change)="onAdvancedSettingChange()">
+              <span class="checkmark"></span>
+              Enable Fallback Strategies
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button (click)="onSubmit()" [disabled]="!url || isSubmitting" class="btn-primary">
+        {{ isSubmitting ? 'Starting...' : 'Start Analysis' }}
+      </button>
+    </div>
   </div>
 
   <div class="status-card" *ngIf="currentJob">

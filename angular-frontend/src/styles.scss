@@ -1,12 +1,55 @@
-/* Global Styles */
+/* Global Styles and Theme Variables */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+:root {
+  /* Light theme */
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-hover: #f2f4f8;
+  --text-primary: #222;
+  --text-secondary: #555;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --placeholder-color: #94a3b8;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #64748b;
+  --secondary-hover: #475569;
+  --disabled-bg: #cbd5e1;
+  --disabled-text: #f8fafc;
+  --focus-ring: rgba(37, 99, 235, 0.25);
+  --elevation: 0 6px 18px rgba(2, 8, 23, 0.08);
+}
+
+body.dark {
+  /* Dark theme overrides */
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --surface-hover: #111a2e;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #1f2a44;
+  --input-bg: #0b1220;
+  --input-border: #233153;
+  --placeholder-color: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary: #475569;
+  --secondary-hover: #334155;
+  --disabled-bg: #1e293b;
+  --disabled-text: #94a3b8;
+  --focus-ring: rgba(59, 130, 246, 0.25);
+  --elevation: 0 8px 24px rgba(2, 8, 23, 0.55);
+}
+
 body {
   font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
